@@ -1,0 +1,43 @@
+version: '3.7'
+
+services:
+    my-laravel-app:
+        build: ./
+        restart: always
+        container_name: my-laravel-app
+        ports:
+            - ${APP_PORT:-80}:80
+            - ${HMR_PORT:-8080}:8080
+        volumes:
+            - ./:/var/www/html
+            -  /var/www/laravel-realworld-example-app/vendor/
+        networks:
+            - laravel
+        depends_on:
+            - mysql
+    mysql:
+        image: mysql
+        container_name: mysqldb
+        ports:
+            - ${FORWARD_DB_PORT:-3306}:3306
+        restart: always
+        environment:
+            MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+            MYSQL_DATABASE: ${DB_DATABASE}
+            MYSQL_USER: ${DB_USERNAME}
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+        volumes:
+            - my-laravel-db:/var/lib/mysql
+            - ./mysql/my.cnf:/etc/mysql/my.cnf
+        networks:
+            - laravel
+
+networks:
+    laravel:
+        name: laravel
+        driver: bridge
+
+volumes:
+    my-laravel-db:
+        name: my-laravel-db
+        driver: local
